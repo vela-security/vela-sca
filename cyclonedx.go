@@ -8,6 +8,7 @@ import (
 	"github.com/vela-security/vela-public/kind"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type component cdx.Component
@@ -77,10 +78,16 @@ func (c *cyclonedx) PackageURL() []byte {
 
 	data := make([]string, n)
 	for i := 0; i < n; i++ {
-		data[i] = c.cxt.Components[i].PackageURL
+		purl := c.cxt.Components[i].PackageURL
+		if iv := strings.IndexByte(purl, '@'); iv < 0 {
+			data[i] = purl + "@0.0.0"
+			continue
+		}
+		data[i] = purl
 	}
 
-	enc := kind.NewJsonEncoder()
+	var buf []byte
+	enc := kind.NewJson(buf)
 	enc.Tab("")
 	enc.Join("coordinates", data)
 	enc.End("}")

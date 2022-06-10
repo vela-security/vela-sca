@@ -7,6 +7,7 @@ import (
 	"github.com/vela-security/vela-public/kind"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type sdxEx struct {
@@ -109,6 +110,12 @@ func (s *spdx) PackageURL() []byte {
 			if ext.Type != "purl" {
 				continue
 			}
+
+			if iv := strings.IndexByte(ext.Category, '@'); iv < 0 {
+				data[i] = ext.Category + "@0.0.0"
+				continue
+			}
+
 			data = append(data, ext.Category)
 		}
 	}
