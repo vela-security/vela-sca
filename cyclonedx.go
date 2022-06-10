@@ -2,6 +2,7 @@ package sca
 
 import (
 	"encoding/json"
+	cdx "github.com/CycloneDX/cyclonedx-go"
 	"github.com/vela-security/vela-audit"
 	"github.com/vela-security/vela-public/catch"
 	"github.com/vela-security/vela-public/kind"
@@ -9,11 +10,21 @@ import (
 	"os/exec"
 )
 
+type component cdx.Component
+
+type cyclonedxT struct {
+	BomFormat    string       `json:"bomFormat"`
+	SpecVersion  string       `json:"SpecVersion"`
+	SerialNumber string       `json:"serialNumber"`
+	Metadata     cdx.Metadata `json:"metadata"`
+	Components   []component  `json:"components"`
+}
+
 type cyclonedx struct {
 	exe   string
 	file  string
 	data  []byte
-	sbom  sbom
+	cxt   cyclonedxT
 	info  os.FileInfo
 	cause *catch.Cause
 }
@@ -52,21 +63,21 @@ func (c *cyclonedx) Invoke() {
 	}
 	c.data = raw
 
-	err = json.Unmarshal(raw, &c.sbom)
+	err = json.Unmarshal(raw, &c.cxt)
 	if err != nil {
 		audit.Debug("%s cyclonedx decode fail %v", c.file, err)
 	}
 }
 
 func (c *cyclonedx) PackageURL() []byte {
-	n := len(c.sbom.Components)
+	n := len(c.cxt.Components)
 	if n == 0 {
 		return nil
 	}
 
 	data := make([]string, n)
 	for i := 0; i < n; i++ {
-		data[i] = c.sbom.Components[i].PackageURL
+		data[i] = c.cxt.Components[i].PackageURL
 	}
 
 	enc := kind.NewJsonEncoder()

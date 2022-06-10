@@ -6,7 +6,7 @@ type track struct {
 	err error
 }
 
-func (s *sca) track(filename string) *track {
+func (s *sca) track(filename string, flag bool) *track { //flag: true  use tunnel client
 	cdx := newCyclonedx(s.cfg.exe, filename)
 	cdx.Invoke()
 
@@ -15,6 +15,12 @@ func (s *sca) track(filename string) *track {
 	}
 
 	var v []sonatype
-	err := s.Sonatype(&v, cdx.PackageURL())
+	var err error
+	if flag {
+		err = s.SonaTypeByEnv(&v, cdx.PackageURL())
+	} else {
+		err = s.Sonatype(&v, cdx.PackageURL())
+	}
+
 	return &track{cdx: cdx, son: v, err: err}
 }

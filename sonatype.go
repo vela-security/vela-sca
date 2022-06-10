@@ -64,3 +64,22 @@ func (s *sca) Sonatype(v *[]sonatype, body []byte) error {
 
 	return json.NewDecoder(r.Body).Decode(v)
 }
+
+func (s *sca) SonaTypeByEnv(v *[]sonatype, data []byte) error {
+	if len(data) == 0 {
+		return fmt.Errorf("empty body")
+	}
+
+	return xEnv.PostJSON("/v1/vulnerability/sonatype", json.RawMessage(data), v)
+
+	//path := "/proxy/sonatype/api/v3/authorized/component-report"
+	//method := "POST"
+	//body := bytes.NewReader(data)
+	//query := fmt.Sprintf("time=%d", time.Now().Unix())
+	//header := http.Header{}
+	//header.Add("Accept", "application/vnd.ossindex.component-report.v1+json")
+	//header.Add("Content-Type", "application/vnd.ossindex.component-report-request.v1+json")
+	//header.Add("User-Agent", "vela-security-http-client-v1.0")
+
+	//return xEnv.HTTP(method, path, query, body, header).JSON(v)
+}
